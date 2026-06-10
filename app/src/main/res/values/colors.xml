@@ -1,0 +1,8 @@
+<resources>
+    <color name="suveren_bg">#101418</color>
+    <color name="suveren_panel">#182029</color>
+    <color name="suveren_text">#F4F7FA</color>
+    <color name="suveren_muted">#95A3B3</color>
+    <color name="suveren_accent">#4DA3FF</color>
+    <color name="suveren_danger">#FF5C5C</color>
+</resources>
