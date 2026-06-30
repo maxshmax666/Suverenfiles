@@ -1,6 +1,10 @@
 # GreenWave Recorder Architecture
 
+ codex/determine-mobile-app-build-capability-h1begz
+GreenWave Recorder is an async Python 3.12+ platform for discovering, recording, and analyzing city camera video streams from browser-rendered public sites. This document defines the implementation target and tracks the current Phase 1 baseline.
+=======
 GreenWave Recorder is an async Python 3.12+ platform for discovering, recording, and analyzing city camera video streams from browser-rendered public sites. This document defines the approved implementation target before code is written.
+main
 
 ## Goals
 
@@ -403,10 +407,17 @@ class CameraRepositoryProtocol(Protocol):
 
 ## Implementation Milestones
 
+ codex/determine-mobile-app-build-capability-h1begz
+1. Project scaffold, packaging, lint/type/test configuration, CLI shell, logging, and settings. Implemented in the current baseline.
+2. SQLite schema and repository layer with tests. Implemented in the current baseline.
+3. Pydantic models and stream classification with tests. Implemented in the current baseline.
+4. Playwright browser session and CDP traffic capture. Initial implementation is present; deeper body capture and ServiceWorker cache introspection remain next.
+=======
 1. Project scaffold, packaging, lint/type/test configuration, CLI shell, logging, and settings.
 2. SQLite schema and repository layer with tests.
 3. Pydantic models and stream classification with tests.
 4. Playwright browser session and CDP traffic capture.
+main
 5. Crawler actions for links, camera lists, map-like click targets, and lazy UI.
 6. Stream verifier for HLS, LL-HLS, DASH, MJPEG, MP4 live, and generic HTTP video candidates.
 7. `discover` orchestration, `cameras.json` export, and end-to-end local fixture tests.
