@@ -1,10 +1,6 @@
 # GreenWave Recorder Architecture
 
- codex/determine-mobile-app-build-capability-h1begz
-GreenWave Recorder is an async Python 3.12+ platform for discovering, recording, and analyzing city camera video streams from browser-rendered public sites. This document defines the implementation target and tracks the current Phase 1 baseline.
-=======
-GreenWave Recorder is an async Python 3.12+ platform for discovering, recording, and analyzing city camera video streams from browser-rendered public sites. This document defines the approved implementation target before code is written.
-main
+GreenWave Recorder is an async Python 3.12+ platform for discovering, recording, and analyzing city camera video streams from browser-rendered public sites. This document defines the approved implementation target and tracks the current Phase 1 baseline.
 
 ## Goals
 
@@ -392,7 +388,7 @@ class CameraRepositoryProtocol(Protocol):
 
 ## Operational Notes
 
-- Chromium must be installed with `playwright install chromium` on desktop Linux. Termux support depends on the availability of a compatible Chromium binary and may require passing an explicit executable path.
+- Chromium must be installed with `playwright install chromium` on Linux servers and Windows development workstations. Android/Termux support is intentionally out of scope for the current phase.
 - Cloudflare, WAF, and bot defenses are handled only through legitimate browser behavior: persistent context, cookies, JavaScript execution, redirects, and storage. The project must not implement credential theft, CAPTCHA bypass services, or exploit-based evasion.
 - Verification must use conservative concurrency and timeouts to avoid overloading public camera sites.
 - Raw playlist bodies stored in SQLite must be bounded to avoid unbounded database growth.
@@ -407,17 +403,10 @@ class CameraRepositoryProtocol(Protocol):
 
 ## Implementation Milestones
 
- codex/determine-mobile-app-build-capability-h1begz
 1. Project scaffold, packaging, lint/type/test configuration, CLI shell, logging, and settings. Implemented in the current baseline.
 2. SQLite schema and repository layer with tests. Implemented in the current baseline.
 3. Pydantic models and stream classification with tests. Implemented in the current baseline.
 4. Playwright browser session and CDP traffic capture. Initial implementation is present; deeper body capture and ServiceWorker cache introspection remain next.
-=======
-1. Project scaffold, packaging, lint/type/test configuration, CLI shell, logging, and settings.
-2. SQLite schema and repository layer with tests.
-3. Pydantic models and stream classification with tests.
-4. Playwright browser session and CDP traffic capture.
-main
 5. Crawler actions for links, camera lists, map-like click targets, and lazy UI.
 6. Stream verifier for HLS, LL-HLS, DASH, MJPEG, MP4 live, and generic HTTP video candidates.
 7. `discover` orchestration, `cameras.json` export, and end-to-end local fixture tests.
