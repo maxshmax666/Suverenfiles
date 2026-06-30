@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Annotated
 
@@ -16,7 +17,7 @@ from greenwave.database.repositories import CameraRepository
 from greenwave.discover.engine import DiscoveryEngine
 from greenwave.discover.verifier import StreamVerifier
 from greenwave.logging import configure_logging
-from greenwave.models.stream import StreamDescriptor, StreamType
+from greenwave.models.stream import StreamDescriptor, StreamType, VerificationResult
 
 app = typer.Typer(no_args_is_help=True, help="GreenWave Recorder CLI.")
 console = Console()
@@ -54,12 +55,18 @@ def crawl(url: Annotated[str, typer.Argument(help="Page URL to crawl.")]) -> Non
 def scan(
     url_or_file: Annotated[str, typer.Argument(help="URL or file containing stream URLs.")],
 ) -> None:
-    """Classify and verify one direct stream URL without browser traversal."""
+    """Classify and verify direct stream URL(s) without browser traversal."""
 
     async def _run() -> None:
-        descriptor = StreamDescriptor(url=url_or_file, type=_guess_direct_type(url_or_file))
-        result = await StreamVerifier().verify(descriptor)
-        console.print(result.model_dump_json(indent=2))
+        targets = _load_scan_targets(url_or_file)
+        results = await _verify_scan_targets(targets)
+        if len(results) == 1:
+            console.print(results[0].model_dump_json(indent=2))
+            return
+        console.print(f"[green]Verified {len(results)} stream target(s).[/green]")
+        for result in results:
+            status = "online" if result.online else "offline"
+            console.print(f"{status}: {result.stream.type.value} {result.stream.url}")
 
     asyncio.run(_run())
 
@@ -99,3 +106,44 @@ def _guess_direct_type(url: str) -> StreamType:
     if lowered.startswith("rtmp://"):
         return StreamType.RTMP
     return StreamType.UNKNOWN_VIDEO
+
+
+def _load_scan_targets(url_or_file: str) -> list[str]:
+    """Return scan targets from a direct URL or a UTF-8 text file.
+
+    File mode intentionally accepts one target per line and ignores empty lines
+    and shell-style comments, so operators can keep reusable scan inventories.
+    """
+
+    path = Path(url_or_file)
+    if not path.exists():
+        return [url_or_file]
+    if not path.is_file():
+        raise typer.BadParameter(f"scan target path is not a file: {path}")
+
+    targets = [
+        line.strip()
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    ]
+    if not targets:
+        raise typer.BadParameter(f"scan target file is empty: {path}")
+    return targets
+
+
+async def _verify_scan_targets(
+    targets: Sequence[str],
+    *,
+    concurrency: int = 10,
+) -> list[VerificationResult]:
+    """Verify scan targets with bounded concurrency to avoid socket spikes."""
+
+    verifier = StreamVerifier()
+    semaphore = asyncio.Semaphore(concurrency)
+
+    async def _verify(target: str) -> VerificationResult:
+        async with semaphore:
+            descriptor = StreamDescriptor(url=target, type=_guess_direct_type(target))
+            return await verifier.verify(descriptor)
+
+    return await asyncio.gather(*(_verify(target) for target in targets))
